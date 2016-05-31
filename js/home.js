@@ -112,6 +112,8 @@ function onGameClick(){
 	
 	if(this.id == "sudoku-block"){
 		loadSudokuPage();
-	} 	
+	}else if(this.id == "chess-block"){
+		loadChessPage();
+	}
 	
 }

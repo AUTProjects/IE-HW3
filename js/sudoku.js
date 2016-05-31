@@ -82,7 +82,8 @@ function displayResult(xml) {
 	for(var i = 0 ; i < items.length ; i++){
 		items[i].onmousedown = onTextselected;
 		
-		items[i].onkeyup = function() {selected_item = this; myKeyPress(event)};
+		items[i].onkeyup = function() {selected_item = this; myKeyUp(event)};
+        items[i].onkeypress = function() {selected_item = this; myKeyPress(event)};
 		if(items[i].getAttribute("contenteditable"))
 		{
 			original_back = items[i].style.background;
@@ -192,22 +193,35 @@ function validSudoku() {
     return valid;
 }
 
+var old_value;
 
  function myKeyPress(e){
     var keynum;
-    if(window.event) { // IE                    
+    if(window.event) { // IE
       keynum = e.keyCode;
-    } else if(e.which){ // Netscape/Firefox/Opera                   
+    } else if(e.which){ // Netscape/Firefox/Opera
       keynum = e.which;
     }
 
-	if(selected_item.innerHTML > 0 ){
+     old_value = selected_item.innerHTML;
+
+	if( selected_item.innerHTML > 0 ){
 		selected_item.innerHTML = "";
 	}
-	
-	alert(keynum);
-	
-//	if(keynum > 57 || keynum < 49)
-		//return false;
-		
+
+
  }
+
+function myKeyUp(e){
+    var keynum;
+    if(window.event) { // IE
+        keynum = e.keyCode;
+    } else if(e.which){ // Netscape/Firefox/Opera
+        keynum = e.which;
+    }
+
+    if((keynum > 57 || keynum < 49 ) && keynum != 8 && keynum != 46 ){
+        selected_item.innerHTML = old_value;
+    }
+
+}
