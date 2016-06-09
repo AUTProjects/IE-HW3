@@ -6,7 +6,7 @@ function loadHomePage(){
 		document.getElementById("pwd").innerHTML = "HOME";
 	var xmlhttp = new XMLHttpRequest();
 	xmlhttp.onreadystatechange = onPageRecived;
-	xmlhttp.open("GET","https://pi0.ir/ie/home.xml/",false);
+	xmlhttp.open("GET","http://ie.ce-it.ir/hw3/xml/home.xml",false);
 	xmlhttp.send(null);
 
 }
@@ -24,7 +24,13 @@ function onPageRecived(){
 
 			document.getElementById("games").style.color =
 			xmlDoc.getElementsByTagName("gameicon")[0].getAttribute("color");
-
+			
+			document.getElementById("games").children[0].onmouseover = function(){
+				this.style.color = xmlDoc.getElementsByTagName("gameicon")[0].getAttribute("hover");
+			};
+				document.getElementById("games").children[0].onmouseout = function(){
+				this.style.color = xmlDoc.getElementsByTagName("gameicon")[0].getAttribute("color");
+			};
 			document.getElementById("home-icon").style.display="none";
 
 			var game = xmlDoc.getElementsByTagName("game");
@@ -47,6 +53,8 @@ function onPageRecived(){
 				var li = document.createElement("li");
 				li.className = "dropdown";
 				li.innerHTML = name;
+				li.id = name + "-block";
+				li.onmousedown = onGameClick;
 				li.style.display = "none";
 				document.getElementById("games").appendChild(li);
 
@@ -62,9 +70,10 @@ function onPageRecived(){
 			document.getElementsByClassName("game-block")[max[1]].style.borderStyle =
 			xmlDoc.getElementsByTagName("games")[0].getAttribute("max-onlines-border-style");
 
-			//	document.getElementById("games").getElementsByTagName("li")[0].onmouseup= dropdown;
-			//	window.onmousedown= dropup;
-
+				
+				document.getElementById("games").children[0].style.float = "right";
+				document.getElementById("games").onmouseover= dropdown;
+				document.getElementById("games").onmouseout = dropup;
 
 	}
 }
@@ -84,10 +93,18 @@ function addGame(data_onlines,game_name,image_src,game_text){
 			document.getElementById("main-container").appendChild(div);
 			div2.appendChild(img);
 			div.onmousedown = onGameClick;
+		
 			var p =  document.createElement("p");
 			p.innerHTML = game_text.childNodes[0].nodeValue;
 			p.style.color = game_text.getAttribute("color");
 			div.appendChild(p);
+			div.onmouseover = function(){
+				p.style.color =  game_text.getAttribute("hover");
+			}
+			
+			div.onmouseout = function(){
+				p.style.color =  game_text.getAttribute("color");
+			}
 }
 
 
@@ -114,6 +131,11 @@ function onGameClick(){
 		loadSudokuPage();
 	}else if(this.id == "chess-block"){
 		loadChessPage();
+	}else{
+		document.getElementById("main-container").innerHTML = "this game not implimented yet!";
+		document.getElementById("pwd").innerHTML = "home/" + this.id.split("-")[0]; 
+		   document.getElementById("home-icon").style.display = "inline";
+		     document.getElementById("home-icon").onmousedown = loadHomePage;
 	}
 	
 }

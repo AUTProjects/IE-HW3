@@ -4,20 +4,23 @@ var select_back;
 
 var original_color;
 var original_back;
+var hover;
 
 var selected_item;
 
 function loadSudokuPage() {
-    document.getElementById("pwd").innerHTML = document.getElementById("pwd").innerHTML + "/SUDOKU";
+    document.getElementById("pwd").innerHTML =  "home/SUDOKU";
     document.getElementById("main-container").innerHTML = '';
     var xmlhttp = new XMLHttpRequest();
     xmlhttp.onreadystatechange = onPageRecived2;
     xmlhttp.open("GET", "http://ie.ce-it.ir/hw3/xml/sudoku.xml", false);
+	//    xmlhttp.open("GET", "http://ceit.aut.ac.ir/~sepehr/ie/sudoku.xml", false);
     xmlhttp.send(null);
     document.getElementById("home-icon").style.display = "inline";
     document.getElementById("home-icon").onmousedown = loadHomePage;
 	document.onkeypress = onTextselected;
 	document.getElementById("check-sudoku").onmousedown  = validSudoku;
+	document.getElementById("submit-sudoku").onmousedown  = sendToServer;
 	
 
 }
@@ -30,6 +33,8 @@ function onPageRecived2() {
 		var xmlDoc = responseXML.documentElement;
 		select_color = responseXML.documentElement.getAttribute("selectedNumberColor");
 		select_back = responseXML.documentElement.getAttribute("selectedNumberBackColor");
+		hover = responseXML.documentElement.getAttribute("hover");
+		
         displayResult(responseXML);
     }
 
@@ -84,6 +89,8 @@ function displayResult(xml) {
 		
 		items[i].onkeyup = function() {selected_item = this; myKeyUp(event)};
         items[i].onkeypress = function() {selected_item = this; myKeyPress(event)};
+		items[i].onmouseover = onmouseoveritem;
+		items[i].onmouseout = onmouseoutitem;
 		if(items[i].getAttribute("contenteditable"))
 		{
 			original_back = items[i].style.background;
@@ -125,72 +132,88 @@ function onTextselected(){
 
 function validSudoku() {
 	items = document.getElementById("sudoku").getElementsByTagName("tr");
+	
 	var data = [0];
 	var rows = [0];
 	for(var r = 0 ; r < items.length ; r++ )
 	{
 		for(var c = 0 ; c < items[r].getElementsByTagName("td").length ; c++)
 		{
-			rows[r] = items[r].getElementsByTagName("td")[c].innerHTML
+			rows[c] = items[r].getElementsByTagName("td")[c].innerHTML;
 		}
 		data[r] = rows;
 		rows = [0];
 	}
 
-	data = [
-  [7,8,4, 1,5,9, 3,2,6],
-  [5,3,9, 6,7,2, 8,4,1],
-  [6,1,2, 4,3,8, 7,5,9],
-
-  [9,2,8, 7,1,5, 4,6,3],
-  [3,5,7, 8,4,6, 1,9,2],
-  [4,6,1, 9,2,3, 5,8,7],
-
-  [8,7,6, 3,9,4, 2,1,5],
-  [2,4,3, 5,6,1, 9,7,8],
-  [1,9,5, 2,8,7, 6,3,4]
-];
     var valid = true, 
         temp = [], 
         data,
         side,
         slot;
 
-
+	//console.log(data);
     // Check wrong size
     if (data[0].length !== data.length) valid = false;
-
+	
     // slot*slot
     slot = Math.sqrt(data.length);
 
     // Verifiy horizontal
-    data.forEach(function(arr) {
-        valid = valid && arr.every(function(val, i) { return arr.indexOf(i + 1) > -1; });
-    });
+	for(var i = 0 ; i < 9 ; i++)
+		for(var j = 0 ; j < 9 ; j++)
+			for(var k  = 0 ; k < 9 ; k++)
+				if(data[i][j] == data[i][k] && k != j || data[i][j] == 0 ){
+					for(var l = 0 ; l<9 ; l++)
+					{
+						items[i].getElementsByTagName("td")[l].style.background = "orange";
+					}
+					valid = false;
+				}
+				
 
-    // Verifiy vertical lines
-    data.forEach(function(arr, i) {
-        temp  = data.map(function(val) { return val[i]; });
-        valid = valid && arr.every(function(val, i) { return temp.indexOf(i + 1) > -1; });
-    });
 
+	for(var i = 0 ; i < 9 ; i++)
+		for(var j = 0 ; j < 9 ; j++)
+			for(var k  = 0 ; k < 9 ; k++)
+				if(data[j][i] == data[k][i] && k != j){
+					for(var l = 0 ; l<9 ; l++)
+					{
+						items[l].getElementsByTagName("td")[i].style.background = "orange";
+					}
+					valid = false;
+				}
+				
+	
+	var boxes = [
+	[0,1,2,9,10,11,18,19,20],
+	[3,4,5,12,13,14,21,22,23],
+	[6,7,8,15,16,17,24,25,26],
+	[27,28,29,36,37,38,45,46,47],
+	[30,31,32,39,40,41,48,49,50],
+	[33,34,35,42,43,44,51,52,53],
+	[54,55,56,63,64,65,72,73,74],
+	[57,58,59,66,67,68,75,76,77],
+	[60,61,62,69,70,71,78,79,80]
+	];
     // Verifiy boxes
-    for (var i = 0; i < slot; i++) {
-
-        data.forEach(function(val, e) {
-            side  = val.slice(slot * i, slot * i + slot);
-            temp  = temp.concat(side);
-
-            if ((e+1) % slot == 0 && e > 0) {
-                for (var j = 1; j <= data.length; j++)
-                    if (temp.indexOf(j) < 0) valid = false;                 
-                temp = [];
-            }
-
-        });
-
-    }
-    return valid;
+		items = document.getElementById("sudoku").getElementsByTagName("td");
+	for(var i = 0 ; i<9 ; i++)
+		for(var j =0 ; j < 9 ; j++ )
+			for(var k = 0 ; k < 9 ;k++){
+				console.log(boxes[i][j]);
+				if(items[boxes[i][j]].innerHTML == items[boxes[i][k]].innerHTML && j != k){
+					//window.alert(i +" "+boxes[i][j]+" " +boxes[i][k]);
+					for(var l = 0 ; l<9 ; l++)
+					{
+						items[boxes[i][l]].style.background = "orange";
+					}
+					valid = false;
+				}
+			}
+			
+		
+	window.alert(valid);
+    return valid
 }
 
 var old_value;
@@ -224,4 +247,59 @@ function myKeyUp(e){
         selected_item.innerHTML = old_value;
     }
 
+}
+
+function sendToServer(){
+		items = document.getElementById("sudoku").getElementsByTagName("tr");
+		var xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>";
+		xml += "<solution xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:noNamespaceSchemaLocation=\"http://ie.ce-it.ir/hw3/sudoku_solution.xsd\">";
+		xml += "<cells>";
+		for(var j = 0 ; j< 9; j++)
+		for(var i = 0; i < 9 ; i++)
+			//if(items[i].innerHTML == 0)
+			{
+				xml+="<cell posval=\""+parseInt(parseInt(j)*100+parseInt(i)*10+parseInt(items[j].getElementsByTagName("td")[i].innerHTML))+"\">";
+				xml+=items[j].getElementsByTagName("td")[i].innerHTML;
+				xml+="</cell>";
+				//window.alert("khalie");
+				//return 0;
+			}
+			xml+="</cells>";
+			xml+="<student id=\"9231011\">9231011</student>";
+			xml+=" </solution>";
+		//	window.alert(xml);
+			 var xmlhttp = new XMLHttpRequest();
+			xmlhttp.onreadystatechange = solutionRecived;
+			xmlhttp.open("POST", "http://ie.ce-it.ir/hw3/sudoku_validator.php", false);
+			xmlhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+			var parms = "solution_xml="+xml;
+			console.log(parms);
+			xmlhttp.send(parms);
+		
+}
+
+function solutionRecived(){
+	if(this.status == 200)
+	window.alert(this.responseText);
+}
+
+
+function onmouseoveritem(){
+	//window.alert("over");
+	if(	this.style.background != select_back)
+	this.style.background = hover;
+}
+
+function onmouseoutitem(){
+	if(	this.style.background == select_back)
+		return;
+				if(this.getAttribute("contenteditable"))
+				{
+					this.style.background = original_back ;
+					this.style.color = original_color ;		
+				}
+			else{
+					this.style.background = "white" ;
+					this.style.color = original_color ;		
+			}
 }
